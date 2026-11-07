@@ -1,0 +1,47 @@
+name: Compilar e publicar APK Subtitle Overlay TV
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+      - name: Preparar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Instalar Android SDK 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Configurar Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Compilar APK de teste
+        run: gradle --no-daemon assembleDebug
+      - name: Renomear APK para download direto
+        run: cp app/build/outputs/apk/debug/app-debug.apk SubtitleOverlayTV.apk
+      - name: Disponibilizar APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: SubtitleOverlayTV-debug-APK
+          path: SubtitleOverlayTV.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publicar em Releases para baixar pela TV (apenas repositórios públicos)
+        if: ${{ !github.event.repository.private }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.1-test >/dev/null 2>&1; then
+            gh release upload v0.1-test SubtitleOverlayTV.apk --clobber
+          else
+            gh release create v0.1-test SubtitleOverlayTV.apk --title 'Teste v0.1 - Subtitle Overlay TV' --notes 'APK experimental, compilado automaticamente; compatibilidade com UniTV nao verificada.' --prerelease
+          fi
