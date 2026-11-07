@@ -1,0 +1,11 @@
+1
+00:00:00,000 --> 00:00:20,000
+TESTE: LEGENDA SOBRE A UNITV
+
+2
+00:00:20,000 --> 00:00:40,000
+Se voce esta lendo isso, a sobreposicao funcionou!
+
+3
+00:00:40,000 --> 00:01:00,000
+Subtitle Overlay TV - Teste concluido
